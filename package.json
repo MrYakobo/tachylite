@@ -1,0 +1,9 @@
+{
+  "devDependencies": {
+    "@tailwindcss/typography": "^0.5.15"
+  },
+  "scripts": {
+    "build": "tailwindcss -i src/input.css -o src/assets/style.css",
+    "dev": "tailwindcss -i src/input.css -o src/assets/style.css -w"
+  }
+}

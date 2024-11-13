@@ -1,0 +1,42 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+details {
+  margin: 0 auto;
+  margin-bottom: 0.5rem;
+  border-radius: 5px;
+}
+
+summary {
+  display: block;
+  position: relative;
+  cursor: pointer;
+  user-select: none;
+}
+
+summary::before {
+  content: "";
+  border: solid black;
+  margin-bottom: 2px;
+  border-width: 0 1px 1px 0;
+  display: inline-block;
+  padding: 3px;
+  border-color: #fff;
+  transform: rotate(-45deg);
+  margin-right: 10px;
+  transition: 0.12s transform ease;
+}
+
+/* THE MAGIC 🧙‍♀️ */
+details[open] > summary:before {
+  transform: rotate(45deg);
+}
+
+details summary::-webkit-details-marker {
+  display: none;
+}
+
+.highlighted {
+  font-weight: bolder;
+}
