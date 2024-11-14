@@ -1,15 +1,35 @@
-# obsidian publish
+# tachylite
 
-this is a static site generator that attempts to feel like obsidian publish
+static site generator for markdown vaults
 
 ## features
 
-- some way of converting markdown to html: comrak
-- generate the sidebar: folders are collapsible, files are links, nestable
-- generate the "on this page" sidebar for the headers, nestable
+- converts markdown files to html using [comrak](https://github.com/kivikakk/comrak)
+- navbar with folders and files: collapsible and nestable.
+- table of contents with headers
 
-use rust for this? lol
+and obviously it must be written in rust lol
 
-## how it looks
+## screenshot
 
 ![](screenshot.png)
+
+## usage
+
+```bash
+# build and install binary
+cargo build
+ln -s $PWD/target/debug/tachylite ~/bin/
+
+# build site and spin up an HTTP server
+tachylite site -o output
+python3 -m http.server -d output
+```
+
+## development
+
+the DX sucks lol
+
+```bash
+cargo run -- site && npm run build && python3 -m http.server -d output
+```
