@@ -52,8 +52,6 @@ fn generate_html(markdown: &str, blog_name: &str, title: &str, sidebar: &str, to
 
     let content = markdown_to_html_with_plugins(markdown, &options, &plugins);
 
-    let js = read_to_string("src/scroll.js").unwrap();
-
     let title = format!("{} | {}", title, blog_name);
 
     format!(
@@ -63,22 +61,23 @@ fn generate_html(markdown: &str, blog_name: &str, title: &str, sidebar: &str, to
     <meta charset="UTF-8">
     <title>{}</title>
     <link rel="stylesheet" href="/assets/style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
 </head>
 <body class="bg-neutral-800">
-    <div class="h-screen flex bg-neutral-800 text-neutral-100 justify-center">
+    <div class="h-screen lg:flex bg-neutral-800 text-neutral-100 justify-center">
         <section class="py-16 overflow-y-scroll w-52 border-r border-neutral-600 bg-neutral-800 h-full">
         <div class="prose prose-invert">
             <a href="/" class="no-underline"><h1 class="pl-4 ">{}</h1></a>
         </div>
             <nav>{}</nav>
         </section>
-        <article class="py-16 w-full max-w-prose prose prose-invert prose-a:text-violet-400 prose-blockquote:border-violet-500 prose-blockquote:border-l prose-blockquote:not-italic prose-li:m-0 mx-8 h-full overflow-y-scroll">{}</article>
+        <article class="py-16 px-4 w-full max-w-prose prose prose-invert prose-a:text-violet-400 prose-blockquote:border-violet-500 prose-blockquote:border-l prose-blockquote:not-italic prose-li:m-0 mx-8 h-full overflow-y-scroll">{}</article>
         <aside class="py-16 toc w-72 text-ellipsis whitespace-nowrap px-4 overflow-y-scroll overflow-x-hidden">{}</aside>
     </div>
 </body>
-<script>{}</script>
+<script src="/assets/scroll.js"></script>
 </html>"###,
-        title, blog_name, sidebar, content, toc, js
+        title, blog_name, sidebar, content, toc
     )
 }
 
@@ -151,7 +150,15 @@ fn generate_sidebar(
 #[command(version, about, long_about = None)]
 struct Args {
     #[clap(help = "Sets the input directory", required = true)]
-    input: String,
+    input_dir: String,
+
+    #[clap(
+        short,
+        long,
+        help = "Sets the output directory",
+        default_value = "output"
+    )]
+    output_dir: String,
 }
 
 fn process_markdown_files(input_dir: &str, output_dir: &str) {
@@ -210,6 +217,7 @@ fn process_markdown_files(input_dir: &str, output_dir: &str) {
 }
 
 const CSS: &[u8] = include_bytes!("assets/style.css");
+const JS: &[u8] = include_bytes!("assets/scroll.js");
 
 fn copy_assets(output_dir: &str) {
     let output_assets_dir = Path::new(output_dir).join("assets");
@@ -218,14 +226,17 @@ fn copy_assets(output_dir: &str) {
     let css_path = output_assets_dir.join("style.css");
     fs::write(css_path, CSS).expect("Failed to write CSS file");
 
+    let js_path = output_assets_dir.join("scroll.js");
+    fs::write(js_path, JS).expect("Failed to write JS file");
+
     println!("Assets copied successfully to {:?}", output_assets_dir);
 }
 
 fn main() {
     let args = Args::parse();
 
-    let input_dir = &args.input;
-    let output_dir = "html_output";
+    let input_dir = &args.input_dir;
+    let output_dir = &args.output_dir;
 
     // Create the output directory if it doesn't exist
     fs::create_dir_all(output_dir).expect("Failed to create output directory");

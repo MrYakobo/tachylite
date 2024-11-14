@@ -2,6 +2,11 @@
 @tailwind components;
 @tailwind utilities;
 
+body {
+  /* purple and dark */
+  scrollbar-color: rgb(139 92 246) rgba(0, 0, 0, 0.25);
+}
+
 details {
   margin: 0 auto;
   margin-bottom: 0.5rem;
