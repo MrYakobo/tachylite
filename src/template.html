@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>{{title}}</title>
+    <link rel="stylesheet" href="/assets/style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script src="https://unpkg.com/alpinejs@3.14.3/dist/cdn.min.js" defer></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-neutral-800 text-neutral-100">
+    <!-- mobile -->
+    <div class="lg:hidden" x-data="{ show_files: false }">
+        <header class="h-12 px-8 flex justify-between items-center">
+            <button @click="show_files = true"
+                class="cursor-pointer hover:text-purple-700 font-extrabold text-3xl text-purple-600">☰</button>
+            <span class="text-neutral-400">
+                {{title}}
+            </span>
+            <span class="w-32">&nbsp;</span>
+        </header>
+        <div class="fixed left-0 top-0 h-screen overflow-y-scroll transition-transform duration-200 transform w-9/12 bg-neutral-900 z-20 border-r border-neutral-800"
+            x-bind:class="show_files ? 'transform-none' : '-translate-x-full'">
+            <a href="/" class="no-underline">
+                <h1 class="text-3xl font-bold pl-4 mb-4 mt-8 mx-4">{{blog_name}}</h1>
+            </a>
+            <nav>{{sidebar}}</nav>
+        </div>
+        <div x-show="show_files" @click="show_files = false"
+            class="fixed left-0 top-0 bg-black w-screen h-screen opacity-50 z-10">
+            &nbsp;</div>
+        <article
+            class="my-8 max-w-prose prose prose-invert prose-a:text-violet-400 prose-blockquote:border-violet-500 prose-blockquote:border-l prose-blockquote:not-italic prose-li:m-0 mx-6 h-full overflow-y-scroll">
+            {{content}}</article>
+    </div>
+
+    <div class="hidden lg:block">
+        <!-- desktop -->
+        <div class="h-screen flex bg-neutral-800">
+            <section class="py-16 overflow-y-scroll w-64 border-r border-neutral-600 bg-neutral-900 h-full">
+                <div class="prose prose-invert">
+                    <a href="/" class="no-underline">
+                        <h1 class="text-3xl font-bold pl-4 my-4 mx-4">{{blog_name}}</h1>
+                    </a>
+                </div>
+                <nav>{{sidebar}}</nav>
+            </section>
+            <article
+                class="py-16 px-4 w-full max-w-prose prose prose-invert prose-a:text-violet-400 prose-blockquote:border-violet-500 prose-blockquote:border-l prose-blockquote:not-italic prose-li:m-0 mx-8 h-full overflow-y-scroll">
+                {{content}}</article>
+            <aside class="py-16 toc w-72 text-ellipsis whitespace-nowrap px-4 overflow-y-scroll overflow-x-hidden">
+                {{toc}}
+            </aside>
+        </div>
+    </div>
+</body>
+<script src="/assets/scroll.js"></script>
+
+</html>

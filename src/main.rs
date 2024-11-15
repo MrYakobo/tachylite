@@ -3,8 +3,10 @@
 use clap::Parser;
 use comrak::plugins::syntect::SyntectAdapterBuilder;
 use comrak::{markdown_to_html_with_plugins, Anchorizer, ComrakOptions};
+use std::borrow::Borrow;
 use std::collections::HashMap;
 use std::fs::{self, read_to_string};
+use std::io;
 use std::path::Path;
 
 fn generate_docnav(markdown: &str) -> String {
@@ -54,31 +56,12 @@ fn generate_html(markdown: &str, blog_name: &str, title: &str, sidebar: &str, to
 
     let title = format!("{} | {}", title, blog_name);
 
-    format!(
-        r###"<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>{}</title>
-    <link rel="stylesheet" href="/assets/style.css">
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-</head>
-<body class="bg-neutral-800">
-    <div class="h-screen lg:flex bg-neutral-800 text-neutral-100 justify-center">
-        <section class="py-16 overflow-y-scroll w-52 border-r border-neutral-600 bg-neutral-800 h-full">
-        <div class="prose prose-invert">
-            <a href="/" class="no-underline"><h1 class="pl-4 ">{}</h1></a>
-        </div>
-            <nav>{}</nav>
-        </section>
-        <article class="py-16 px-4 w-full max-w-prose prose prose-invert prose-a:text-violet-400 prose-blockquote:border-violet-500 prose-blockquote:border-l prose-blockquote:not-italic prose-li:m-0 mx-8 h-full overflow-y-scroll">{}</article>
-        <aside class="py-16 toc w-72 text-ellipsis whitespace-nowrap px-4 overflow-y-scroll overflow-x-hidden">{}</aside>
-    </div>
-</body>
-<script src="/assets/scroll.js"></script>
-</html>"###,
-        title, blog_name, sidebar, content, toc
-    )
+    include_str!("template.html")
+        .replace("{{title}}", &title)
+        .replace("{{blog_name}}", blog_name)
+        .replace("{{sidebar}}", sidebar)
+        .replace("{{content}}", &content)
+        .replace("{{toc}}", toc)
 }
 
 fn generate_sidebar(
@@ -94,18 +77,23 @@ fn generate_sidebar(
         sidebar_html.push_str(r#"<ul class="pl-4">"#);
     }
 
-    for entry in fs::read_dir(dir_path).expect("Failed to read directory") {
-        let entry = entry.expect("Failed to read entry");
-        let path = entry.path();
+    let mut entries = fs::read_dir(dir_path)
+        .expect("Failed to read directory")
+        .map(|res| res.map(|e| e.path()))
+        .collect::<Result<Vec<_>, io::Error>>()
+        .expect("uh");
 
+    entries.sort_by_key(|path| path.is_file());
+
+    for path in entries {
         if path.is_dir() {
             // Generate a collapsible folder
             let is_current_file_in_dir = current_file_path.starts_with(&path);
             let summary_attribute = if is_current_file_in_dir { "open" } else { "" };
             sidebar_html.push_str(&format!(
-                r#"<li><details {}><summary class="pl-4 py-1 hover:bg-neutral-700">{}</summary><ul class="pl-4 py-1">{}</ul></details></li>"#,
+                r#"<li><details {}><summary class="pl-4 py-1 hover:bg-neutral-700">{}</summary><ul class="border-l border-white/30 ml-[1.15rem] my-2">{}</ul></details></li>"#,
                 summary_attribute,
-                entry.file_name().to_string_lossy(),
+                path.file_name().expect("uh").to_string_lossy(),
                 generate_sidebar(&path, current_file_path, site_root, true)
             ));
         } else if path.is_file() && path.extension().and_then(|s| s.to_str()) == Some("md") {
@@ -120,7 +108,8 @@ fn generate_sidebar(
             let abs_path = path.strip_prefix(site_root).unwrap();
             let html_path = abs_path.with_extension("html");
 
-            let class = if is_subdir { "border-l" } else { "" };
+            // let class = if is_subdir { "border-l" } else { "" };
+            let class = "";
 
             // current link
             let active_class = if current_file_path
@@ -166,10 +155,15 @@ fn process_markdown_files(input_dir: &str, output_dir: &str) {
 
     // Recursively iterate through files and directories
     fn process_dir(dir_path: &Path, output_dir: &Path, input_path: &Path, input_dir: &str) {
-        for entry in fs::read_dir(dir_path).expect("Failed to read directory") {
-            let entry = entry.expect("Failed to read directory entry");
-            let path = entry.path();
+        let mut entries = fs::read_dir(dir_path)
+            .expect("Failed to read directory")
+            .map(|res| res.map(|e| e.path()))
+            .collect::<Result<Vec<_>, io::Error>>()
+            .expect("uh");
 
+        entries.sort_by_key(|path| path.is_file());
+
+        for path in entries {
             if path.is_dir() {
                 // Create the output directory if it doesn't exist
                 let output_subdir = output_dir.join(path.file_name().unwrap());
@@ -206,7 +200,11 @@ fn process_markdown_files(input_dir: &str, output_dir: &str) {
                     .join(path.strip_prefix(input_path).unwrap())
                     .with_extension("html");
 
-                fs::write(&output_file_path, html_content).expect("Could not write HTML file");
+                fs::create_dir_all(&output_file_path.parent().unwrap())
+                    .expect("couldn't create subdir in output directory");
+
+                let err = format!("Could not write HTML file to {:?}", output_file_path);
+                fs::write(&output_file_path, html_content).expect(&err);
                 println!("Generated HTML file: {:?}", output_file_path);
             }
         }

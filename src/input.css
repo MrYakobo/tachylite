@@ -7,12 +7,6 @@ body {
   scrollbar-color: rgb(139 92 246) rgba(0, 0, 0, 0.25);
 }
 
-details {
-  margin: 0 auto;
-  margin-bottom: 0.5rem;
-  border-radius: 5px;
-}
-
 summary {
   display: block;
   position: relative;
@@ -33,6 +27,16 @@ summary::before {
   transition: 0.12s transform ease;
 }
 
+details::details-content {
+  height: 0;
+  transition-duration: 0.25s;
+}
+
+details[open]::details-content {
+  height: auto;
+  height: calc-size(auto);
+}
+
 /* THE MAGIC 🧙‍♀️ */
 details[open] > summary:before {
   transform: rotate(45deg);
@@ -44,4 +48,12 @@ details summary::-webkit-details-marker {
 
 .highlighted {
   font-weight: bolder;
+}
+
+summary::marker {
+  content: "";
+}
+
+::-webkit-details-marker {
+  display: none;
 }
