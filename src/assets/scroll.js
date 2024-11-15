@@ -1,7 +1,7 @@
-const headings = document.querySelectorAll('article h1, article h2, article h3, article h4, article h5, article h6')
-const tocLinks = document.querySelectorAll('.toc a')
+const headings = document.querySelectorAll('#desktop article h1, #desktop article h2, #desktop article h3, #desktop article h4, #desktop article h5, #desktop article h6')
+const tocLinks = document.querySelectorAll('#desktop .toc a')
 
-const container = document.querySelector("article")
+const container = document.querySelector("#desktop article")
 
 function is_scrolled_by(container, el, margin) {
     return (container.scrollTop > (el.offsetTop + el.offsetHeight - margin))

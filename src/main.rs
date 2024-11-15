@@ -54,8 +54,6 @@ fn generate_html(markdown: &str, blog_name: &str, title: &str, sidebar: &str, to
 
     let content = markdown_to_html_with_plugins(markdown, &options, &plugins);
 
-    let title = format!("{} | {}", title, blog_name);
-
     include_str!("template.html")
         .replace("{{title}}", &title)
         .replace("{{blog_name}}", blog_name)
@@ -108,17 +106,20 @@ fn generate_sidebar(
             let abs_path = path.strip_prefix(site_root).unwrap();
             let html_path = abs_path.with_extension("html");
 
-            // let class = if is_subdir { "border-l" } else { "" };
-            let class = "";
-
-            // current link
-            let active_class = if current_file_path
+            let is_active_link = current_file_path
                 .to_string_lossy()
-                .ends_with(&*abs_path.to_string_lossy())
-            {
-                "text-violet-400 border-violet-400"
+                .ends_with(&*abs_path.to_string_lossy());
+
+            let active_class = if is_active_link {
+                "text-violet-400 border-violet-400 border-l"
             } else {
                 "hover:border-white/80 hover:text-white/80 border-white/30"
+            };
+
+            let class = if is_subdir && is_active_link {
+                "border-l"
+            } else {
+                ""
             };
 
             sidebar_html.push_str(&format!(
@@ -176,7 +177,14 @@ fn process_markdown_files(input_dir: &str, output_dir: &str) {
                 let markdown_content = read_to_string(&path).expect("Could not read markdown file");
 
                 // Get the file title
-                let file_title = path.file_stem().unwrap().to_str().unwrap().to_string();
+                let file_title = path
+                    .strip_prefix(input_path)
+                    .unwrap()
+                    .with_extension("")
+                    .components()
+                    .map(|c| c.as_os_str().to_string_lossy().to_string())
+                    .collect::<Vec<_>>()
+                    .join(" / ");
 
                 // Generate sidebar for the file
                 let sidebar_html = generate_sidebar(input_path, &path, input_dir, false);

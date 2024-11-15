@@ -10,9 +10,14 @@ static site generator for markdown vaults
 
 and obviously it must be written in rust lol
 
-## screenshot
+## screenshots
 
-![](screenshot.png)
+![](./screenshots/desktop.png)
+
+| mobile | support |
+| -------- | ------- |
+| <img src="./screenshots/mobile.png" height=250>  | <img src="./screenshots/mobile_menu.png" height=250>    |
+
 
 ## usage
 
